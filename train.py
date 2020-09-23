@@ -32,8 +32,8 @@ parser.add_argument("--num_epochs", type=int, default=600, help="Number of train
 parser.add_argument("--decay_step", type=int, default=1000, help="The step at which the learning rate should drop")
 parser.add_argument("--lr_decay", type=float, default=0.5, help='Rate at which the learning rate should drop')
 parser.add_argument("--lr", type=float, default=0.01, help="Initial learning rate")
-parser.add_argument("--data_dir", type=str, default="/home/atipa/Project/motionArtifact/motionArtRed/dataset/OE_masked_1/OE_masked", help='path of data')
-parser.add_argument("--log_dir", type=str, default="/home/atipa/Project/motionArtifact/motionArtRed/results/trial", help='path of log files')
+parser.add_argument("--data_dir", type=str, default=" ", help='path of data')
+parser.add_argument("--log_dir", type=str, default=" ", help='path of log files')
 parser.add_argument("--write_freq", type=int, default=10, help="Step for saving Checkpoint")
 parser.add_argument("--checkpoint", type=str, default=None, help="Checkpoint to start from")
 
@@ -94,7 +94,7 @@ if opt.checkpoint is not None:
     log_open_mode = 'a'
 
 log = LogUtils(os.path.join(opt.log_dir, 'logfile'), log_open_mode)
-log.write('Supervised learning for motion artifact reduction - Training\n')
+log.write('Supervised learning for phase map enhancement - Training\n')
 log.write_args(opt)
 lr_scheduler = lr_scd.StepLR(optimizer, step_size=opt.decay_step, gamma=opt.lr_decay)
 iters = max(iters,0)

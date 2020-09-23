@@ -69,7 +69,7 @@ log_open_mode = 'w'
 checkpoint_util.load_checkpoint(model_3d=model, filename=opt.checkpoint)
 
 log = LogUtils(os.path.join(opt.log_dir, 'logfile'), log_open_mode)
-log.write('Supervised learning for motion artifact reduction - Testing\n')
+log.write('Supervised learning for phase map enhancement - Testing\n')
 log.write_args(opt)
 
 if opt.checkpoint is None:

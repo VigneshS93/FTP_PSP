@@ -1,0 +1,50 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${file}"
+        },
+        {
+            "type": "python",
+            "request": "launch",
+            "name": "train",
+            "console": "integratedTerminal",
+            "program": "/home/atipa/Project/ftp_to_psp/FTP_PSP/train.py",
+            "args": [
+                "--batchSize","4",
+                "--lr","0.01",
+                "--decay_step","1000",
+                "--num_epochs","600",
+                // "--data_dir","/home/atipa/Project/motionArtifact/motionArtRed/Motion_Artifact/data",
+                // "--data_dir","/home/atipa/Project/motionArtifact/motionArtRed/dataset/OE_paperData",
+                "--data_dir","/home/atipa/Project/motionArtifact/motionArtRed/dataset/OE_masked_1/OE_masked",
+                "--log_dir","/home/atipa/Project/motionArtifact/motionArtRed/results/OE_data" 
+            ]
+
+        },
+        {
+            "type": "python",
+            "request": "launch",
+            "name": "test",
+            "console": "integratedTerminal",
+            "program": "/home/atipa/Project/motionArtifact/motionArtRed/Motion_Artifact/test.py",
+            "args": [
+                "--batchSize","4",
+                "--data_dir","/home/atipa/Project/motionArtifact/motionArtRed/dataset/OE_paperData",
+                "--log_dir","/home/atipa/Project/motionArtifact/motionArtRed/Motion_Artifact/results/trial",
+                "--checkpoint","/home/atipa/Project/motionArtifact/motionArtRed/Motion_Artifact/results/trial/checkpoints/checkpoint_7"
+                
+            ]
+
+        }
+    ]
+}
