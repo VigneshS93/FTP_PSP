@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 class ftp_psp(torch.nn.Module):
     def __init__(self, inp_ch):
-        super(art_rem1, self).__init__()
+        super(ftp_psp, self).__init__()
         ks = 3
         pad = 1
         out_ch = 10

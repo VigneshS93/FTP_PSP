@@ -10,7 +10,7 @@ import os
 import cv2
 import pandas as pd
 from matplotlib.pyplot import imread
-from models import art_rem,art_rem1
+from models import ftp_psp
 from torch.utils.data import DataLoader
 from datas import dataset_loader
 import torch.optim as optim
@@ -42,7 +42,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
 # load the training data set
-input_set, groundTruth_set, mask = dataset_loader(opt.data_dir)
+input_set, groundTruth_set, mask, filenames = dataset_loader(opt.data_dir)
 input_set = torch.FloatTensor(np.array(input_set))
 groundTruth_set = torch.FloatTensor(np.array(groundTruth_set))
 mask = torch.FloatTensor(np.array(mask))
@@ -51,7 +51,7 @@ norm_input = normalizeData(input_set)
 norm_gt = normalizeData(groundTruth_set)
 train_set=[]
 for i in range(len(input_set)):
-  train_set.append([input_set[i], norm_input[i], groundTruth_set[i], norm_gt[i], mask[i]])
+  train_set.append([input_set[i], norm_input[i], groundTruth_set[i], norm_gt[i], mask[i], filenames[i]])
 trainLoader = DataLoader(dataset=train_set, num_workers=0, batch_size=opt.batchSize, shuffle=True, pin_memory=True)
 
 # Define the loss function
@@ -78,7 +78,7 @@ if os.path.exists(checkpoints_dir) is not True:
 
 # Load the model
 input_channel=1
-model = art_rem1(input_channel).cuda()
+model = ftp_psp(input_channel).cuda()
 # model = nn.DataParallel(model) # For using multiple GPUs
 
 # Define the optimizer
@@ -108,7 +108,7 @@ for epoch_num in range(start_epoch, opt.num_epochs):
     if lr_scheduler is not None:
       lr_scheduler.step(iters)
     optimizer.zero_grad()
-    ori_inp, inp_PM, ori_gt, gt_PM, mask_PM = next(trainData)
+    ori_inp, inp_PM, ori_gt, gt_PM, mask_PM, filename_PM = next(trainData)
     inp_PM = torch.unsqueeze(inp_PM,1).cuda()
     gt_PM = torch.unsqueeze(gt_PM,1).cuda()
     mask_PM = torch.unsqueeze(mask_PM,1).cuda()
@@ -145,7 +145,11 @@ for epoch_num in range(start_epoch, opt.num_epochs):
   gt = ori_gt[0].detach().cpu().numpy()
   filename = opt.log_dir + str("/epoch_") + str(epoch_num) + str("_ori_gtPM.csv")
   pd.DataFrame(gt).to_csv(filename,header=False,index=False)
-
+  # Write down the filename
+  f_name = str.encode(filename_PM[0])
+  filename = opt.log_dir + str("/epoch_") + str(epoch_num) + str("fname.csv")
+  with open(filename,"wb") as file:
+    file.write(b)
   # Log the results
   log.write('\nepoch no.: {0}, Average_train_loss:{1}'.format((epoch_num), ("%.8f" % ave_loss)))
   

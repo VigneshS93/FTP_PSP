@@ -18,9 +18,12 @@ def dataset_loader(data_dir):
       os.chdir(directory)
       files = [i for i in glob.glob('*.{}'.format(extension))]
       files = sorted(files)
+      filename = []
       train_data = []
       for f in files:
             inp = pd.read_csv(f,header=None)
+            filename_temp = str(f)
+            filename.append(filename_temp)
             train_data.append(inp)
       #Read the groundtruth data
       directory=data_dir+str("/groundTruth")
@@ -40,7 +43,7 @@ def dataset_loader(data_dir):
       for f in files:
             inp = pd.read_csv(f,header=None)
             mask_data.append(inp)
-      return train_data, gt_data, mask_data
+      return train_data, gt_data, mask_data, filename
 
 def normalizeData(data):
       norm = torch.zeros(np.shape(data))
