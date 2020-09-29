@@ -48,10 +48,14 @@ def dataset_loader(data_dir):
 def normalizeData(data):
       norm = torch.zeros(np.shape(data))
       for bs in range(len(data)):
-            temp = data[bs]
+            temp = data[bs]           
             norm_temp = temp - torch.min(temp)
             norm_temp = norm_temp/torch.max(norm_temp)
             norm[bs] = norm_temp
+            # temp = data[bs]
+            # data_range = torch.max(temp) - torch.min(temp)
+            # norm_temp = (temp - torch.min(temp))/data_range
+            # norm_temp = 2 * norm_temp - 1
       # norm = torch.FloatTensor(np.array(norm))
       return norm
     

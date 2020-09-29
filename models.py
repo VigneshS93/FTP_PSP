@@ -9,17 +9,80 @@ class ftp_psp(torch.nn.Module):
         ks = 3
         pad = 1
         out_ch = 10
-        self.conv1 = nn.Conv2d(inp_ch, out_ch, kernel_size=ks, stride=1, padding=pad)
+        self.conv1 = nn.Conv2d(inp_ch, inp_ch, kernel_size=ks, stride=1, padding=pad)
+        self.conv2 = nn.Conv2d(inp_ch, out_ch, kernel_size=ks, stride=1, padding=pad)
         self.bnorm1 = nn.BatchNorm2d(out_ch)
-        self.conv2 = nn.Conv2d(out_ch, out_ch, kernel_size=ks, stride=1, padding=pad)
+        self.conv3 = nn.Conv2d(out_ch, out_ch, kernel_size=ks, stride=1, padding=pad)
         self.bnorm2 = nn.BatchNorm2d(out_ch)
-        self.conv3 = nn.Conv2d(out_ch, inp_ch, kernel_size=ks, stride=1, padding=pad)
+        self.conv4 = nn.Conv2d(out_ch, inp_ch, kernel_size=ks, stride=1, padding=pad)
         self.bnorm3 = nn.BatchNorm2d(inp_ch)
+        self.conv5 = nn.Conv2d(inp_ch, inp_ch, kernel_size=ks, stride=1, padding=pad)
         
        
     def forward(self, X):
-        h = F.relu(self.bnorm1(self.conv1(X)))
-        h = F.relu(self.bnorm2(self.conv2(h)))
-        h = F.relu(self.bnorm3(self.conv3(h)))
+        h = self.conv1(X)
+        h = F.relu((self.conv2(h)))
+        h = F.relu((self.conv3(h)))
+        h = F.relu((self.conv4(h)))
+        h = self.conv5(h)
+        # h = h + X
+        
+        return h
+
+class ftp_psp1(torch.nn.Module):
+    def __init__(self, inp_ch):
+        super(ftp_psp1, self).__init__()
+        ks = 3
+        pad = 1
+        out_ch1 = 10
+        out_ch2 = 20
+        self.conv1 = nn.Conv2d(inp_ch, out_ch1, kernel_size=ks, stride=1, padding=pad)
+        self.bnorm1 = nn.BatchNorm2d(out_ch1)
+        self.conv2 = nn.Conv2d(out_ch1, out_ch1, kernel_size=ks, stride=1, padding=pad)
+        self.bnorm2 = nn.BatchNorm2d(out_ch1)
+        self.conv3 = nn.Conv2d(out_ch1, inp_ch, kernel_size=ks, stride=1, padding=pad)
+        self.conv4 = nn.Conv2d(inp_ch, out_ch1, kernel_size=ks, stride=1, padding=pad)
+        self.conv5 = nn.Conv2d(out_ch1, out_ch2, kernel_size=ks, stride=1, padding=pad)
+        self.conv6 = nn.Conv2d(out_ch2, out_ch1, kernel_size=ks, stride=1, padding=pad)
+        self.conv7 = nn.Conv2d(out_ch1, inp_ch, kernel_size=ks, stride=1, padding=pad)
+        
+    def forward(self, X):
+        h = F.relu((self.conv1(X)))
+        h = F.relu((self.conv2(h)))
+        h = self.conv3(h)
+        # h = h + X
+        h = F.relu(self.conv4(h))
+        h = F.relu(self.conv5(h))
+        h = F.relu(self.conv6(h))
+        h = self.conv7(h)
+        return h
+
+class ftp_psp2(torch.nn.Module):
+    def __init__(self, inp_ch):
+        super(ftp_psp2, self).__init__()
+        ks = 3
+        pad = 1
+        out_ch1 = 10
+        out_ch2 = 20
+        out_ch3 = 30
+        out_ch4 = 40
+        self.conv1 = nn.Conv2d(inp_ch, out_ch1, kernel_size=ks, stride=1, padding=pad)
+        self.conv2 = nn.Conv2d(out_ch1, out_ch2, kernel_size=ks, stride=1, padding=pad)
+        self.conv3 = nn.Conv2d(out_ch2, out_ch3, kernel_size=ks, stride=1, padding=pad)
+        self.conv4 = nn.Conv2d(out_ch3, out_ch4, kernel_size=ks, stride=1, padding=pad)
+        self.conv5 = nn.Conv2d(out_ch4, out_ch3, kernel_size=ks, stride=1, padding=pad)
+        self.conv6 = nn.Conv2d(out_ch3, out_ch2, kernel_size=ks, stride=1, padding=pad)
+        self.conv7 = nn.Conv2d(out_ch2, out_ch1, kernel_size=ks, stride=1, padding=pad)
+        self.conv8 = nn.Conv2d(out_ch1, inp_ch, kernel_size=ks, stride=1, padding=pad)
+        
+    def forward(self, X):
+        h = F.relu(self.conv1(X))
+        h = F.relu(self.conv2(h))
+        h = F.relu(self.conv3(h))
+        h = F.relu(self.conv4(h))
+        h = F.relu(self.conv5(h))
+        h = F.relu(self.conv6(h))
+        h = self.conv7(h)
+        h = self.conv8(h)
         
         return h

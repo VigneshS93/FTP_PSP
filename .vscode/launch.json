@@ -20,14 +20,13 @@
             "console": "integratedTerminal",
             "program": "/home/atipa/Project/ftp_to_psp/FTP_PSP/train.py",
             "args": [
-                "--batchSize","4",
+                "--batchSize","8",
                 "--lr","0.01",
-                "--decay_step","1000",
+                "--decay_step","10000",
                 "--num_epochs","600",
-                // "--data_dir","/home/atipa/Project/motionArtifact/motionArtRed/Motion_Artifact/data",
-                // "--data_dir","/home/atipa/Project/motionArtifact/motionArtRed/dataset/OE_paperData",
+                // "--data_dir","/home/atipa/Project/ftp_to_psp/dataset/training/FTP_PSP_data",               
                 "--data_dir","/home/atipa/Project/motionArtifact/motionArtRed/dataset/OE_masked_1/OE_masked",
-                "--log_dir","/home/atipa/Project/motionArtifact/motionArtRed/results/OE_data" 
+                "--log_dir","/home/atipa/Project/ftp_to_psp/results/exp1" 
             ]
 
         },

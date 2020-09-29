@@ -10,7 +10,7 @@ import os
 import cv2
 import pandas as pd
 from matplotlib.pyplot import imread
-from models import ftp_psp
+from models import ftp_psp, ftp_psp1, ftp_psp2
 from torch.utils.data import DataLoader
 from datas import dataset_loader
 import torch.optim as optim
@@ -26,19 +26,20 @@ from datas import normalizeData
 
 
 #Pass the arguments
-parser = argparse.ArgumentParser(description="art_rem")
+parser = argparse.ArgumentParser(description="ftp_psp2")
 parser.add_argument("--batchSize", type=int, default=4, help="Training batch size")
 parser.add_argument("--num_epochs", type=int, default=600, help="Number of training epochs")
 parser.add_argument("--decay_step", type=int, default=1000, help="The step at which the learning rate should drop")
-parser.add_argument("--lr_decay", type=float, default=0.5, help='Rate at which the learning rate should drop')
+parser.add_argument("--lr_decay", type=float, default=0.5, help="Rate at which the learning rate should drop")
 parser.add_argument("--lr", type=float, default=0.01, help="Initial learning rate")
-parser.add_argument("--data_dir", type=str, default=" ", help='path of data')
-parser.add_argument("--log_dir", type=str, default=" ", help='path of log files')
+parser.add_argument("--data_dir", type=str, default=" ", help="path of data")
+parser.add_argument("--log_dir", type=str, default=" ", help="path of log files")
 parser.add_argument("--write_freq", type=int, default=10, help="Step for saving Checkpoint")
 parser.add_argument("--checkpoint", type=str, default=None, help="Checkpoint to start from")
+parser.add_argument("--gpu_no", type=str, default="0", help="path of log files")
 
 opt = parser.parse_args()
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = opt.gpu_no
 
 
 # load the training data set
@@ -51,7 +52,8 @@ norm_input = normalizeData(input_set)
 norm_gt = normalizeData(groundTruth_set)
 train_set=[]
 for i in range(len(input_set)):
-  train_set.append([input_set[i], norm_input[i], groundTruth_set[i], norm_gt[i], mask[i], filenames[i]])
+  train_set.append([norm_input[i], norm_gt[i], mask[i], filenames[i]])
+  # train_set.append([input_set[i], groundTruth_set[i], mask[i], filenames[i]])
 trainLoader = DataLoader(dataset=train_set, num_workers=0, batch_size=opt.batchSize, shuffle=True, pin_memory=True)
 
 # Define the loss function
@@ -62,9 +64,6 @@ def squared_diff(mask, output, groundTruth):
   loss = torch.mean(mask_sq_diff)
   return loss
 
-def percept_loss(output,regularization):
-  reg_loss = regularization * (torch.sum(torch.abs(output[:, :, :, :-1] - output[:, :, :, 1:])) + torch.sum(torch.abs(output[:, :, :-1, :] - output[:, :, 1:, :])))
-  return reg_loss
 iters = -1
 
 #Define the log directory for checkpoints
@@ -78,7 +77,7 @@ if os.path.exists(checkpoints_dir) is not True:
 
 # Load the model
 input_channel=1
-model = ftp_psp(input_channel).cuda()
+model = ftp_psp2(input_channel).cuda()
 # model = nn.DataParallel(model) # For using multiple GPUs
 
 # Define the optimizer
@@ -108,7 +107,7 @@ for epoch_num in range(start_epoch, opt.num_epochs):
     if lr_scheduler is not None:
       lr_scheduler.step(iters)
     optimizer.zero_grad()
-    ori_inp, inp_PM, ori_gt, gt_PM, mask_PM, filename_PM = next(trainData)
+    inp_PM, gt_PM, mask_PM, filename_PM = next(trainData)
     inp_PM = torch.unsqueeze(inp_PM,1).cuda()
     gt_PM = torch.unsqueeze(gt_PM,1).cuda()
     mask_PM = torch.unsqueeze(mask_PM,1).cuda()
@@ -133,23 +132,24 @@ for epoch_num in range(start_epoch, opt.num_epochs):
   inp = inp_PM[0][0].detach().cpu().numpy()
   filename = opt.log_dir + str("/epoch_") + str(epoch_num) + str("_inputPM.csv")
   pd.DataFrame(inp).to_csv(filename,header=False,index=False)
-  inp = ori_inp[0].detach().cpu().numpy()
-  filename = opt.log_dir + str("/epoch_") + str(epoch_num) + str("_orig_inputPM.csv")
-  pd.DataFrame(inp).to_csv(filename,header=False,index=False)
+  # inp = ori_inp[0].detach().cpu().numpy()
+  # filename = opt.log_dir + str("/epoch_") + str(epoch_num) + str("_orig_inputPM.csv")
+  # pd.DataFrame(inp).to_csv(filename,header=False,index=False)
   out = output_PM[0][0].detach().cpu().numpy()
   filename = opt.log_dir + str("/epoch_") + str(epoch_num) + str("_outputPM.csv")
   pd.DataFrame(out).to_csv(filename,header=False,index=False)
   gt = gt_PM[0][0].detach().cpu().numpy()
   filename = opt.log_dir + str("/epoch_") + str(epoch_num) + str("_gtPM.csv")
   pd.DataFrame(gt).to_csv(filename,header=False,index=False)
-  gt = ori_gt[0].detach().cpu().numpy()
-  filename = opt.log_dir + str("/epoch_") + str(epoch_num) + str("_ori_gtPM.csv")
-  pd.DataFrame(gt).to_csv(filename,header=False,index=False)
+  # gt = ori_gt[0].detach().cpu().numpy()
+  # filename = opt.log_dir + str("/epoch_") + str(epoch_num) + str("_ori_gtPM.csv")
+  # pd.DataFrame(gt).to_csv(filename,header=False,index=False)
+  
   # Write down the filename
   f_name = str.encode(filename_PM[0])
   filename = opt.log_dir + str("/epoch_") + str(epoch_num) + str("fname.csv")
   with open(filename,"wb") as file:
-    file.write(b)
+    file.write(f_name)
   # Log the results
   log.write('\nepoch no.: {0}, Average_train_loss:{1}'.format((epoch_num), ("%.8f" % ave_loss)))
   
