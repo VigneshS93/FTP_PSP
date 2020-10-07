@@ -63,9 +63,8 @@ def squared_diff(mask, output, groundTruth):
   sq_diff = torch.square(output - groundTruth)
   mask_sq_diff = torch.mul(mask,sq_diff)
   loss = torch.sqrt(torch.mean(mask_sq_diff))
-  # edg = canny.cannyEdgeDetector(output,sigma=2,kernel_size=5,lowthreshold=0.09,highthreshold=0.17,weak_pixel=50)
   return loss
-
+# edg = canny.cannyEdgeDetector(output,sigma=2,kernel_size=5,lowthreshold=0.09,highthreshold=0.17,weak_pixel=50)
 def edge_loss(out, target, cuda=True):
 	x_filter = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
 	y_filter = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
