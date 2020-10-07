@@ -22,7 +22,6 @@ import utils.check_points_utils as checkpoint_util
 from torch.autograd import Variable
 from torchvision import transforms
 from datas import normalizeData
-import canny_edge_detector as canny
 # from dataloader import load_data as data_loader
 
 
@@ -63,41 +62,8 @@ def squared_diff(mask, output, groundTruth):
   sq_diff = torch.square(output - groundTruth)
   mask_sq_diff = torch.mul(mask,sq_diff)
   loss = torch.mean(mask_sq_diff)
-  edg = canny.cannyEdgeDetector(output,sigma=2,kernel_size=5,lowthreshold=0.09,highthreshold=0.17,weak_pixel=50)
   return loss
 
-def edge_loss(out, target, cuda=True):
-	x_filter = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
-	y_filter = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
-	convx = nn.Conv2d(1, 1, kernel_size=3, stride=1, padding=1, bias=False)
-	convy = nn.Conv2d(1, 1, kernel_size=3 , stride=1, padding=1, bias=False)
-	weights_x = torch.from_numpy(x_filter).float().unsqueeze(0).unsqueeze(0)
-	weights_y = torch.from_numpy(y_filter).float().unsqueeze(0).unsqueeze(0)
-
-	if cuda:
-		weights_x = weights_x.cuda()
-		weights_y = weights_y.cuda()
-
-	convx.weight = nn.Parameter(weights_x)
-	convy.weight = nn.Parameter(weights_y)
-
-	g1_x = convx(out)
-	g2_x = convx(target)
-	g1_y = convy(out)
-	g2_y = convy(target)
-
-	g_1 = torch.sqrt(torch.pow(g1_x, 2) + torch.pow(g1_y, 2))
-	g_2 = torch.sqrt(torch.pow(g2_x, 2) + torch.pow(g2_y, 2))
-
-	return torch.mean((g_1 - g_2).pow(2))
-
-def mse_edge_loss(mask,output,groundTruth):
-  sq_diff = torch.square(output - groundTruth)
-  mask_sq_diff = torch.mul(mask,sq_diff)
-  mse_loss = torch.mean(mask_sq_diff)
-  edg_loss = edge_loss(output,groundTruth)
-  loss = 0.8*mse_loss+0.2*edg_loss
-  return loss
 iters = -1
 
 #Define the log directory for checkpoints
@@ -111,7 +77,7 @@ if os.path.exists(checkpoints_dir) is not True:
 
 # Load the model
 input_channel=1
-model = ftp_psp2(input_channel).cuda()
+model = ftp_psp3(input_channel).cuda()
 model = nn.DataParallel(model) # For using multiple GPUs
 
 # Define the optimizer
