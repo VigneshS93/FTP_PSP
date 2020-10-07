@@ -62,8 +62,8 @@ mse_loss = nn.MSELoss(reduction='mean')
 def squared_diff(mask, output, groundTruth):
   sq_diff = torch.square(output - groundTruth)
   mask_sq_diff = torch.mul(mask,sq_diff)
-  loss = torch.mean(mask_sq_diff)
-  edg = canny.cannyEdgeDetector(output,sigma=2,kernel_size=5,lowthreshold=0.09,highthreshold=0.17,weak_pixel=50)
+  loss = torch.sqrt(torch.mean(mask_sq_diff))
+  # edg = canny.cannyEdgeDetector(output,sigma=2,kernel_size=5,lowthreshold=0.09,highthreshold=0.17,weak_pixel=50)
   return loss
 
 def edge_loss(out, target, cuda=True):
