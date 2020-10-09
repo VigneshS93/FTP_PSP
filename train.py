@@ -23,6 +23,7 @@ from torch.autograd import Variable
 from torchvision import transforms
 from datas import normalizeData
 import canny_edge_detector as canny
+from cannyEdge import CannyFilter
 # from dataloader import load_data as data_loader
 
 
@@ -62,8 +63,9 @@ mse_loss = nn.MSELoss(reduction='mean')
 def squared_diff(mask, output, groundTruth):
   sq_diff = torch.square(output - groundTruth)
   mask_sq_diff = torch.mul(mask,sq_diff)
-  loss = torch.sqrt(torch.mean(mask_sq_diff))
+  loss = torch.mean(mask_sq_diff)
   return loss
+canny_edge = CannyFilter()
 # edg = canny.cannyEdgeDetector(output,sigma=2,kernel_size=5,lowthreshold=0.09,highthreshold=0.17,weak_pixel=50)
 def edge_loss(out, target, cuda=True):
 	x_filter = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
