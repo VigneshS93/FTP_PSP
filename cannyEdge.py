@@ -1,6 +1,7 @@
 import numpy as np 
 import torch
 import torch.nn as nn
+import cv2
 def get_gaussian_kernel(k=3, mu=0, sigma=1, normalize=True):
     # compute 1 dimension gaussian
     gaussian_1D = np.linspace(-1, 1, k)

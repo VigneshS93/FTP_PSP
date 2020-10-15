@@ -26,7 +26,7 @@
                 "--num_epochs","600",
                 // "--data_dir","/home/atipa/Project/ftp_to_psp/dataset/training/FTP_PSP_data",               
                 "--data_dir","/home/atipa/Project/motionArtifact/motionArtRed/dataset/OE_masked_1/OE_masked",
-                "--log_dir","/home/atipa/Project/ftp_to_psp/results/exp1" 
+                "--log_dir","/home/atipa/Project/ftp_to_psp/results/trial" 
             ]
 
         },

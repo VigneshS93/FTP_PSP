@@ -43,7 +43,6 @@ parser.add_argument("--gpu_no", type=str, default="0", help="path of log files")
 opt = parser.parse_args()
 os.environ["CUDA_VISIBLE_DEVICES"] = opt.gpu_no
 
-
 # load the training data set
 input_set, groundTruth_set, mask, filenames = dataset_loader(opt.data_dir)
 input_set = torch.FloatTensor(np.array(input_set))
@@ -60,12 +59,15 @@ trainLoader = DataLoader(dataset=train_set, num_workers=0, batch_size=opt.batchS
 
 # Define the loss function
 mse_loss = nn.MSELoss(reduction='mean')
+l1_loss = nn.L1Loss()
+
 def squared_diff(mask, output, groundTruth):
   sq_diff = torch.square(output - groundTruth)
   mask_sq_diff = torch.mul(mask,sq_diff)
   loss = torch.mean(mask_sq_diff)
   return loss
-canny_edge = CannyFilter()
+
+canny_edge = CannyFilter().cuda()
 # edg = canny.cannyEdgeDetector(output,sigma=2,kernel_size=5,lowthreshold=0.09,highthreshold=0.17,weak_pixel=50)
 def edge_loss(out, target, cuda=True):
 	x_filter = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
@@ -147,7 +149,7 @@ for epoch_num in range(start_epoch, opt.num_epochs):
     gt_PM = torch.unsqueeze(gt_PM,1).cuda()
     mask_PM = torch.unsqueeze(mask_PM,1).cuda()
     output_PM = model(inp_PM)
-    # rg_loss = percept_loss(output_PM,reg)
+    pred_edge = canny_edge(output_PM)
     loss = squared_diff(mask_PM, output_PM, gt_PM)
     # loss = loss + rg_loss
     loss.backward()
