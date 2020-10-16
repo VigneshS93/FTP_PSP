@@ -43,6 +43,9 @@ parser.add_argument("--log_dir", type=str, default=" ", help="path of log files"
 parser.add_argument("--write_freq", type=int, default=10, help="Step for saving Checkpoint")
 parser.add_argument("--checkpoint", type=str, default=None, help="Checkpoint to start from")
 parser.add_argument("--gpu_no", type=str, default="0", help="path of log files")
+parser.add_argument("--low_th", type=float, default=0, help="Lower threshold for canny")
+parser.add_argument("--high_th", type=float, default=0.01, help="Higher threshold for canny")
+parser.add_argument("--co_eff", type=float, default=0.7, help="Coefficient for loss")
 
 opt = parser.parse_args()
 os.environ["CUDA_VISIBLE_DEVICES"] = opt.gpu_no
@@ -62,49 +65,25 @@ for i in range(len(input_set)):
 trainLoader = DataLoader(dataset=train_set, num_workers=0, batch_size=opt.batchSize, shuffle=True, pin_memory=True)
 
 # Define the loss function
-mse_loss = nn.MSELoss(reduction='mean')
-l1_loss = nn.L1Loss()
-
+# mse_loss = nn.MSELoss(reduction='mean')
+canny_edge = CannyFilter().cuda()
 def squared_diff(mask, output, groundTruth):
   sq_diff = torch.square(output - groundTruth)
   mask_sq_diff = torch.mul(mask,sq_diff)
   loss = torch.mean(mask_sq_diff)
   return loss
-
-canny_edge = CannyFilter().cuda()
-# edg = canny.cannyEdgeDetector(output,sigma=2,kernel_size=5,lowthreshold=0.09,highthreshold=0.17,weak_pixel=50)
-def edge_loss(out, target, cuda=True):
-	x_filter = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
-	y_filter = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
-	convx = nn.Conv2d(1, 1, kernel_size=3, stride=1, padding=1, bias=False)
-	convy = nn.Conv2d(1, 1, kernel_size=3 , stride=1, padding=1, bias=False)
-	weights_x = torch.from_numpy(x_filter).float().unsqueeze(0).unsqueeze(0)
-	weights_y = torch.from_numpy(y_filter).float().unsqueeze(0).unsqueeze(0)
-
-	if cuda:
-		weights_x = weights_x.cuda()
-		weights_y = weights_y.cuda()
-
-	convx.weight = nn.Parameter(weights_x)
-	convy.weight = nn.Parameter(weights_y)
-
-	g1_x = convx(out)
-	g2_x = convx(target)
-	g1_y = convy(out)
-	g2_y = convy(target)
-
-	g_1 = torch.sqrt(torch.pow(g1_x, 2) + torch.pow(g1_y, 2))
-	g_2 = torch.sqrt(torch.pow(g2_x, 2) + torch.pow(g2_y, 2))
-
-	return torch.mean((g_1 - g_2).pow(2))
-
-def mse_edge_loss(mask,output,groundTruth):
-  sq_diff = torch.square(output - groundTruth)
-  mask_sq_diff = torch.mul(mask,sq_diff)
-  mse_loss = torch.mean(mask_sq_diff)
-  edg_loss = edge_loss(output,groundTruth)
-  loss = 0.8*mse_loss+0.2*edg_loss
+def edgeLoss(output, groundTruth):
+  output_edge = canny_edge(output, opt.low_th, opt.high_th)
+  gt_edge = canny_edge(groundTruth, opt.low_th, opt.high_th)
+  sq_diff = torch.square(output_edge - gt_edge)
+  loss = sq_diff.float().mean()
   return loss
+def mse_edge_loss(mask, output, groundTruth, co_eff):
+  mse_loss = squared_diff(mask, output, groundTruth)
+  edge_loss = edgeLoss(output, groundTruth)
+  loss = co_eff*mse_loss + (1-co_eff)*edge_loss
+  return loss
+
 iters = -1
 
 #Define the log directory for checkpoints
@@ -153,9 +132,8 @@ for epoch_num in range(start_epoch, opt.num_epochs):
     gt_PM = torch.unsqueeze(gt_PM,1).cuda()
     mask_PM = torch.unsqueeze(mask_PM,1).cuda()
     output_PM = model(inp_PM)
-    pred_edge = canny_edge(output_PM)
-    loss = squared_diff(mask_PM, output_PM, gt_PM)
-    # loss = loss + rg_loss
+    loss = mse_edge_loss(mask_PM, output_PM, gt_PM, opt.co_eff)
+    # loss = squared_diff(mask_PM, output_PM, gt_PM)
     loss.backward()
     optimizer.step()
     iters += 1

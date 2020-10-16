@@ -62,7 +62,7 @@ class CannyFilter(nn.Module):
                  mu=0,
                  sigma=1,
                  k_sobel=3,
-                 use_cuda=False):
+                 use_cuda=True):
         super(CannyFilter, self).__init__()
         # device
         self.device = 'cuda' if use_cuda else 'cpu'

@@ -20,7 +20,7 @@
             "console": "integratedTerminal",
             "program": "/home/atipa/Project/ftp_to_psp/FTP_PSP/train.py",
             "args": [
-                "--batchSize","8",
+                "--batchSize","4",
                 "--lr","0.01",
                 "--decay_step","10000",
                 "--num_epochs","600",
