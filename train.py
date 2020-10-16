@@ -26,7 +26,6 @@ import utils.check_points_utils as checkpoint_util
 from torch.autograd import Variable
 from torchvision import transforms
 from datas import normalizeData
-import canny_edge_detector as canny
 from cannyEdge import CannyFilter
 # from dataloader import load_data as data_loader
 
