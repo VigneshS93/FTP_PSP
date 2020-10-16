@@ -43,7 +43,7 @@ parser.add_argument("--write_freq", type=int, default=10, help="Step for saving 
 parser.add_argument("--checkpoint", type=str, default=None, help="Checkpoint to start from")
 parser.add_argument("--gpu_no", type=str, default="0", help="path of log files")
 parser.add_argument("--low_th", type=float, default=0, help="Lower threshold for canny")
-parser.add_argument("--high_th", type=float, default=0.01, help="Higher threshold for canny")
+parser.add_argument("--high_th", type=float, default=0.2, help="Higher threshold for canny")
 parser.add_argument("--co_eff", type=float, default=0.7, help="Coefficient for loss")
 
 opt = parser.parse_args()
@@ -68,14 +68,15 @@ trainLoader = DataLoader(dataset=train_set, num_workers=0, batch_size=opt.batchS
 canny_edge = CannyFilter().cuda()
 def squared_diff(mask, output, groundTruth):
   sq_diff = torch.square(output - groundTruth)
-  mask_sq_diff = torch.mul(mask,sq_diff)
+  mask_sq_diff = torch.mul(mask, sq_diff)
   loss = torch.mean(mask_sq_diff)
   return loss
-def edgeLoss(output, groundTruth):
+def edgeLoss(mask, output, groundTruth):
   output_edge = canny_edge(output, opt.low_th, opt.high_th)
   gt_edge = canny_edge(groundTruth, opt.low_th, opt.high_th)
   sq_diff = torch.square(output_edge - gt_edge)
-  loss = sq_diff.float().mean()
+  mask_sq_diff = torch.mul(mask, sq_diff)
+  loss = mask_sq_diff.float().mean()
   return loss
 def mse_edge_loss(mask, output, groundTruth, co_eff):
   mse_loss = squared_diff(mask, output, groundTruth)
