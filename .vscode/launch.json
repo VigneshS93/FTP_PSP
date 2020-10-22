@@ -35,13 +35,12 @@
             "request": "launch",
             "name": "test",
             "console": "integratedTerminal",
-            "program": "/home/atipa/Project/motionArtifact/motionArtRed/Motion_Artifact/test.py",
+            "program": "/home/atipa/Project/ftp_to_psp/FTP_PSP/test.py",
             "args": [
-                "--batchSize","4",
-                "--data_dir","/home/atipa/Project/motionArtifact/motionArtRed/dataset/OE_paperData",
-                "--log_dir","/home/atipa/Project/motionArtifact/motionArtRed/Motion_Artifact/results/trial",
-                "--checkpoint","/home/atipa/Project/motionArtifact/motionArtRed/Motion_Artifact/results/trial/checkpoints/checkpoint_7"
-                
+                "--batchSize","1",                           
+                "--data_dir","/home/atipa/Project/ftp_to_psp/dataset/testing/exp_data",
+                "--log_dir","/home/atipa/Project/ftp_to_psp/results/exp29/test",
+                "--checkpoint","/home/atipa/Project/ftp_to_psp/results/exp29/checkpoints/checkpoint_699"                
             ]
 
         }

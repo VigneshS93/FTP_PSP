@@ -14,7 +14,7 @@ import os
 import cv2
 import pandas as pd
 from matplotlib.pyplot import imread
-from models import ftp_psp, ftp_psp1, ftp_psp2, ftp_psp3, ftp_psp4
+from models import ftp_psp, ftp_psp1, ftp_psp2, ftp_psp3, ftp_psp4, ftp_psp5
 from torch.utils.data import DataLoader
 from datas import dataset_loader
 import torch.optim as optim
@@ -41,9 +41,9 @@ parser.add_argument("--data_dir", type=str, default=" ", help="path of data")
 parser.add_argument("--log_dir", type=str, default=" ", help="path of log files")
 parser.add_argument("--write_freq", type=int, default=10, help="Step for saving Checkpoint")
 parser.add_argument("--checkpoint", type=str, default=None, help="Checkpoint to start from")
-parser.add_argument("--gpu_no", type=str, default="0", help="path of log files")
+parser.add_argument("--gpu_no", type=str, default="0", help="GPU number")
 parser.add_argument("--low_th", type=float, default=0, help="Lower threshold for canny")
-parser.add_argument("--high_th", type=float, default=0.01, help="Higher threshold for canny")
+parser.add_argument("--high_th", type=float, default=0.2, help="Higher threshold for canny")
 parser.add_argument("--co_eff", type=float, default=0.7, help="Coefficient for loss")
 
 opt = parser.parse_args()
@@ -74,14 +74,20 @@ def squared_diff(mask, output, groundTruth):
 def edgeLoss(mask, output_edge, groundTruth):
   # output_edge = canny_edge(output, opt.low_th, opt.high_th)
   gt_edge = canny_edge(groundTruth, opt.low_th, opt.high_th)
-  sq_diff = torch.square(output_edge - gt_edge)
-  mask_sq_diff = torch.mul(mask, sq_diff)
-  loss = mask_sq_diff.float().mean()
+  diff = torch.abs(output_edge - gt_edge)
+  mask_diff = torch.mul(mask, diff)
+  loss = mask_diff.float().mean()
+  return loss
+def mean_abs_loss(mask, output, groundTruth):
+  diff = torch.abs(output - groundTruth)
+  mask_diff = torch.mul(mask, diff)
+  loss = torch.mean(mask_diff)
   return loss
 def mse_edge_loss(mask, output, out_edge, groundTruth, co_eff):
-  mse_loss = squared_diff(mask, output, groundTruth)
+  # mse_loss = squared_diff(mask, output, groundTruth)
+  mae_loss = mean_abs_loss(mask, output, groundTruth)
   edge_loss = edgeLoss(mask, out_edge, groundTruth)
-  loss = co_eff*mse_loss + (1-co_eff)*edge_loss
+  loss = co_eff*mae_loss + (1-co_eff)*edge_loss
   return loss, edge_loss
 
 iters = -1
@@ -97,7 +103,7 @@ if os.path.exists(checkpoints_dir) is not True:
 
 # Load the model
 input_channel=1
-model = ftp_psp4(input_channel).cuda()
+model = ftp_psp5(input_channel).cuda()
 model = nn.DataParallel(model) # For using multiple GPUs
 
 # Define the optimizer
